@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+<html lang="ml" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>രാരീരം (Rareeram) - മലയാളത്തിൻ്റെ ഈണം & Sleep Timer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HLS.js for Akashvani (.m3u8) & Live Streams -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Google Fonts: Noto Sans Malayalam, Noto Serif Malayalam & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700;800&family=Noto+Serif+Malayalam:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Malayalam"', 'Inter', 'sans-serif'],
+                        serif: ['"Noto Serif Malayalam"', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070b12;
+            color: #f3f4f6;
+            font-family: 'Noto Sans Malayalam', 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #070b12; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes eqBar {
+            0%, 100% { height: 22%; }
+            50% { height: 100%; }
+        }
+        .eq-bar { animation: eqBar 0.75s ease-in-out infinite; }
+        .eq-bar:nth-child(1) { animation-delay: 0.0s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.35s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+        .paused .eq-bar { animation-play-state: paused; height: 25% !important; }
+
+        .gold-glow { box-shadow: 0 0 28px -6px rgba(245, 158, 11, 0.32); }
+        .emerald-kasavu { background: linear-gradient(135deg, #064e3b 0%, #0b1320 100%); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-10 selection:bg-amber-500 selection:text-gray-950">
+
+    <!-- Top Sticky Header -->
+    <header class="sticky top-0 z-30 bg-[#070b12]/95 backdrop-blur-lg border-b border-amber-500/25">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-800 to-gray-900 border border-amber-400/50 flex items-center justify-center shadow-lg relative overflow-hidden">
+                    <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-300"></div>
+                    <i data-lucide="radio" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-extrabold font-serif tracking-wide text-amber-300 flex items-center gap-2">
+                        രാരീരം
+                        <span class="px-2 py-0.5 rounded-full font-sans text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            LIVE
+                        </span>
+                    </h1>
+                    <p class="text-[11px] text-gray-400">മലയാളം റേഡിയോ & സ്ലീപ് ടൈമർ</p>
+                </div>
+            </div>
+
+            <!-- Add Custom Station & Refresh Directory -->
+            <div class="flex items-center gap-2">
+                <button id="openCustomModalBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-amber-500/50 text-xs font-semibold text-amber-300 transition active:scale-95">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>ആറങ്ങോട്ടുകര മുഹമ്മദ്</span>
+                    <span>ആറങ്ങോട്ടുകര മുഹമ്മദ്</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification Banner -->
+    <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 transform -translate-y-6 opacity-0 transition-all duration-300 pointer-events-none w-[92%] max-w-md">
+        <div class="bg-gray-900/95 border border-amber-500/60 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
+            <i id="toastIcon" data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0"></i>
+            <p id="toastMessage" class="text-xs sm:text-sm font-medium leading-snug"></p>
+        </div>
+    </div>
+
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 pt-4 space-y-5">
+
+        <!-- PROMINENT NOW PLAYING + ALWAYS-VISIBLE SLEEP TIMER CARD -->
+        <section class="rounded-3xl emerald-kasavu border border-amber-500/35 p-4 sm:p-5 shadow-2xl gold-glow space-y-4">
+            <!-- Top Row: Station Info & Playback Controls -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <!-- Station Title & Live Equalizer -->
+                <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-emerald-900 border border-amber-400/40 flex items-center justify-center shrink-0 relative">
+                        <i data-lucide="radio-receiver" class="w-7 h-7 text-amber-400"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                            <h2 id="playerStationName" class="text-base sm:text-lg font-extrabold text-white truncate">
+                                ALL STATION 
+                            </h2>
+                            <div id="visualizer" class="paused flex items-end gap-[2px] h-4 shrink-0">
+                                <span class="eq-bar w-[3px] bg-amber-400 rounded-full"></span>
+                                <span class="eq-bar w-[3px] bg-emerald-400 rounded-full"></span>
+                                <span class="eq-bar w-[3px] bg-amber-400 rounded-full"></span>
+                                <span class="eq-bar w-[3px] bg-emerald-400 rounded-full"></span>
+                            </div>
+                        </div>
+                        <p id="playerStatusText" class="text-xs sm:text-sm text-emerald-200/80 truncate mt-0.5">
+                          play ▶️ or scroll down 👇 
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Transport Controls & Auto-Skip Toggle -->
+                <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+                    <!-- Auto-Skip Switch -->
+                    <label class="flex items-center gap-2 cursor-pointer select-none bg-black/30 px-3 py-2 rounded-xl border border-white/10" title="കിട്ടാത്ത സ്റ്റേഷൻ തനിയെ ഒഴിവാക്കി അടുത്തതിലേക്ക് പോകും">
+                        <input type="checkbox" id="autoSkipToggle" checked class="sr-only peer">
+                        <div class="w-8 h-4.5 bg-gray-700 peer-checked:bg-emerald-500 rounded-full relative transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-3.5 after:h-3.5 after:rounded-full after:transition-all peer-checked:after:translate-x-3.5"></div>
+                        <span class="text-[11px] font-semibold text-gray-200">Auto-Skip</span>
+                    </label>
+
+                    <!-- Prev / Play-Pause / Next -->
+                    <div class="flex items-center gap-2">
+                        <button id="prevBtn" title="മുൻപത്തെ നിലയം" class="p-2.5 rounded-xl bg-black/30 hover:bg-black/50 text-gray-200 border border-white/10 transition active:scale-90">
+                            <i data-lucide="skip-back" class="w-5 h-5"></i>
+                        </button>
+
+                        <button id="playPauseBtn" title="Play / Pause" class="w-13 h-13 px-4 py-3 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-gray-950 font-bold flex items-center justify-center shadow-lg shadow-amber-500/30 transition transform active:scale-95">
+                            <i id="playIcon" data-lucide="play" class="w-6 h-6 fill-current"></i>
+                            <i id="pauseIcon" data-lucide="pause" class="w-6 h-6 fill-current hidden"></i>
+                            <div id="loadingSpinner" class="hidden w-5 h-5 border-2 border-gray-950 border-t-transparent rounded-full animate-spin"></div>
+                        </button>
+
+                        <button id="nextBtn" title="അടുത്ത നിലയം" class="p-2.5 rounded-xl bg-black/30 hover:bg-black/50 text-gray-200 border border-white/10 transition active:scale-90">
+                            <i data-lucide="skip-forward" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALWAYS-VISIBLE SLEEP TIMER PANEL RIGHT INSIDE THE PLAYER CARD -->
+            <div class="bg-black/40 border border-amber-500/25 rounded-2xl p-3.5 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="moon-star" class="w-4 h-4 text-amber-400"></i>
+                        <span class="text-xs sm:text-sm font-bold text-amber-300">സ്ലീപ് ടൈമർ (Sleep Timer):</span>
+                        <span id="sleepStatusLabel" class="text-xs text-gray-400">ഓഫ് (Off)</span>
+                    </div>
+
+                    <!-- Volume Slider (Visible on all screens) -->
+                    <div class="flex items-center gap-2">
+                        <button id="muteBtn" class="text-gray-300 hover:text-white p-1">
+                            <i id="volumeIcon" data-lucide="volume-2" class="w-4 h-4"></i>
+                        </button>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.9" class="w-20 sm:w-28 accent-amber-400 bg-gray-700 h-1.5 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Active Countdown Banner (Shown when timer is running) -->
+                <div id="activeTimerBar" class="hidden bg-emerald-950/80 border border-emerald-500/40 rounded-xl p-2.5 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-emerald-200">റേഡിയോ ഓഫാകാൻ ബാക്കി സമയം:</span>
+                            <span id="liveCountdownClock" class="text-lg sm:text-xl font-mono font-extrabold text-amber-400 tracking-wider">00:00</span>
+                        </div>
+                        <button id="cancelTimerBtn" class="px-3 py-1 rounded-lg bg-rose-500/25 hover:bg-rose-500/40 text-rose-200 border border-rose-500/40 text-xs font-bold transition">
+                            റദ്ദാക്കുക (Cancel)
+                        </button>
+                    </div>
+                    <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                        <div id="timerProgressBar" class="bg-amber-400 h-full transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Select Pill Buttons + Custom Minutes Input -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button data-minutes="0" class="sleep-pill active px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-gray-950 transition">
+                        ഓഫ് (Off)
+                    </button>
+                    <button data-minutes="15" class="sleep-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800/90 hover:bg-amber-500/20 text-gray-200 border border-gray-700 transition">
+                        15 മി.
+                    </button>
+                    <button data-minutes="30" class="sleep-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800/90 hover:bg-amber-500/20 text-gray-200 border border-gray-700 transition">
+                        30 മി.
+                    </button>
+                    <button data-minutes="45" class="sleep-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800/90 hover:bg-amber-500/20 text-gray-200 border border-gray-700 transition">
+                        45 മി.
+                    </button>
+                    <button data-minutes="60" class="sleep-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800/90 hover:bg-amber-500/20 text-gray-200 border border-gray-700 transition">
+                        60 മി.
+                    </button>
+
+                    <!-- Custom Minutes Inline Form -->
+                    <div class="flex items-center gap-1.5 ml-auto">
+                        <input type="number" id="customMinutesInput" min="1" max="480" placeholder="മിനിറ്റ്" class="w-20 bg-gray-900 border border-gray-700 focus:border-amber-400 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none">
+                        <button id="setCustomTimerBtn" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+                            സെറ്റ്
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search & Category Filter Bar -->
+        <section class="space-y-3">
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" id="searchInput" placeholder="നിലയം തിരയുക (AIR, Mango, Club FM, Devotional, News)..." class="w-full bg-gray-900 border border-gray-800 focus:border-amber-500/60 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder-gray-500 outline-none">
+                    <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between sm:justify-end gap-2 px-3 py-2 rounded-xl bg-gray-900/80 border border-gray-800 text-xs text-gray-300">
+                    <span id="directoryStatus">നിലയങ്ങൾ ലോഡ് ചെയ്യുന്നു...</span>
+                    <button id="refreshDirectoryBtn" title="പുതിയ നിലയങ്ങൾ തിരയുക" class="p-1 text-amber-400 hover:text-amber-300">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1" id="categoryContainer">
+                <button data-category="all" class="category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-gray-950 transition">
+                    എല്ലാം (<span id="countAll">0</span>)
+                </button>
+                <button data-category="favorites" class="category-pill shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition">
+                    <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500"></i>
+                    പ്രിയപ്പെട്ടവ (<span id="countFav">0</span>)
+                </button>
+                <button data-category="air" class="category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition">
+                    ആകാശവാണി (AIR)
+                </button>
+                <button data-category="fm" class="category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition">
+                    FM & സംഗീതം
+                </button>
+                <button data-category="news" class="category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition">
+                    വാർത്ത & ടോക്ക്
+                </button>
+                <button data-category="devotional" class="category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition">
+                    ഭക്തിഗാനങ്ങൾ
+                </button>
+            </div>
+        </section>
+
+        <!-- Radio Stations Grid -->
+        <section>
+            <div id="stationsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden py-12 text-center space-y-3 bg-gray-900/40 rounded-3xl border border-gray-800">
+                <i data-lucide="radio" class="w-10 h-10 text-gray-500 mx-auto"></i>
+                <p class="text-sm font-semibold text-gray-300">നിലയങ്ങളൊന്നും കണ്ടെത്തിയില്ല</p>
+                <button id="resetFiltersBtn" class="px-4 py-2 rounded-xl bg-amber-500 text-gray-950 text-xs font-bold">
+                    എല്ലാ നിലയങ്ങളും കാണിക്കുക
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Custom Station Modal -->
+    <div id="customStationModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-gray-900 border border-amber-500/30 rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white">പുതിയ റേഡിയോ നിലയം ചേർക്കുക</h3>
+                <button id="closeCustomModalBtn" class="p-1.5 text-gray-400 hover:text-white rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">നിലയത്തിന്റെ പേര് (Station Name)</label>
+                    <input type="text" id="customStationName" placeholder="ഉദാ: എന്റെ ഇഷ്ട റേഡിയോ" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">സ്ട്രീം ലിങ്ക് (HTTPS Stream URL - MP3 / AAC / M3U8)</label>
+                    <input type="url" id="customStationUrl" placeholder="https://..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">വിഭാഗം (Category)</label>
+                    <select id="customStationCategory" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                        <option value="fm">FM & സംഗീതം</option>
+                        <option value="air">ആകാശവാണി (AIR)</option>
+                        <option value="news">വാർത്ത & ടോക്ക്</option>
+                        <option value="devotional">ഭക്തിഗാനങ്ങൾ</option>
+                    </select>
+                </div>
+                <button id="saveCustomStationBtn" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-sm transition">
+                    സേവ് ചെയ്ത് കേൾക്കുക
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="radioAudioPlayer" preload="none" crossorigin="anonymous"></audio>
+
+    <script>
+        /**
+         * All 7 Requested Kerala Akashvani (AIR) Stations + Verified Malayalam FM Streams
+         */
+        const curatedMalayalamStations = [
+            {
+                id: 'air-thrissur',
+                name: 'ആകാശവാണി തൃശ്ശൂർ (AIR Thrissur)',
+                englishName: 'AIR Thrissur',
+                keywords: ['thrissur', 'trichur'],
+                category: 'air',
+                tagline: 'സാംസ്കാരിക തലസ്ഥാനത്തിന്റെ ശബ്ദം',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio036/playlist.m3u8',
+                color: 'from-emerald-600 to-teal-900'
+            },
+            {
+                id: 'air-kozhikode',
+                name: 'ആകാശവാണി കോഴിക്കോട് (AIR Kozhikode)',
+                englishName: 'AIR Kozhikode',
+                keywords: ['kozhikode', 'calicut'],
+                category: 'air',
+                tagline: 'മലബാറിന്റെ സ്വന്തം ആകാശവാണി',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio082/playlist.m3u8',
+                color: 'from-sky-600 to-blue-950'
+            },
+            {
+                id: 'air-kannur',
+                name: 'ആകാശവാണി കണ്ണൂർ (AIR Kannur)',
+                englishName: 'AIR Kannur',
+                keywords: ['kannur', 'cannanore'],
+                category: 'air',
+                tagline: 'വടക്കൻ മലബാറിന്റെ തത്സമയ പ്രക്ഷേപണം',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio173/playlist.m3u8',
+                color: 'from-teal-600 to-cyan-950'
+            },
+            {
+                id: 'air-alappuzha',
+                name: 'ആകാശവാണി ആലപ്പുഴ (AIR Alappuzha)',
+                englishName: 'AIR Alappuzha',
+                keywords: ['alappuzha', 'alleppey'],
+                category: 'air',
+                tagline: 'കിഴക്കിന്റെ വെനീസിൽ നിന്നുള്ള ആകാശവാണി',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio232/playlist.m3u8',
+                color: 'from-cyan-700 to-emerald-950'
+            },
+            {
+                id: 'air-manjeri',
+                name: 'ആകാശവാണി മഞ്ചേരി (AIR Manjeri FM)',
+                englishName: 'AIR Manjeri FM',
+                keywords: ['manjeri'],
+                category: 'air',
+                tagline: 'മഞ്ചേരി എഫ്.എം തത്സമയം',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio101/playlist.m3u8',
+                color: 'from-emerald-700 to-green-950'
+            },
+            {
+                id: 'air-kochi',
+                name: 'ആകാശവാണി കൊച്ചി (AIR Kochi FM Rainbow)',
+                englishName: 'AIR Kochi FM Rainbow',
+                keywords: ['kochi', 'cochin', 'rainbow'],
+                category: 'air',
+                tagline: 'കൊച്ചി റെയിൻബോ എഫ്.എം 102.3',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio045/playlist.m3u8',
+                color: 'from-teal-600 to-emerald-950'
+            },
+            {
+                id: 'air-thiruvananthapuram',
+                name: 'ആകാശവാണി തിരുവനന്തപുരം (AIR Thiruvananthapuram)',
+                englishName: 'AIR Thiruvananthapuram',
+                keywords: ['thiruvananthapuram', 'trivandrum', 'malayalam'],
+                category: 'air',
+                tagline: 'തലസ്ഥാന നഗരിയിൽ നിന്നുള്ള ആകാശവാണി',
+                streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio230/playlist.m3u8',
+                color: 'from-emerald-600 to-gray-900'
+            },
+            {
+                id: 'club-fm-uae',
+                name: 'ക്ലബ് എഫ്.എം (Club FM 94.3)',
+                englishName: 'Club FM Malayalam',
+                category: 'fm',
+                tagline: 'തനി നാടൻ എഫ്.എം ഹിറ്റുകൾ',
+                streamUrl: 'https://eu10.fastcast4u.com/clubfmuae',
+                color: 'from-rose-600 to-red-950'
+            },
+            {
+                id: 'radio-mango-live',
+                name: 'റേഡിയോ മാംഗോ (Radio Mango 91.9)',
+                englishName: 'Radio Mango Malayalam',
+                category: 'fm',
+                tagline: 'നാട്ടിൽ എങ്ങും പാട്ടിൽ എങ്ങും',
+                streamUrl: 'https://bcovlive-a.akamaihd.net/19b535b7499a4719a5c19e043063f5d9/ap-southeast-1/6034685947001/playlist.m3u8',
+                color: 'from-amber-500 to-orange-900'
+            }
+        ];
+
+        // State
+        let allStations = [];
+        let currentStation = null;
+        let isPlaying = false;
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let favorites = JSON.parse(localStorage.getItem('ml_radio_favs_v2') || '[]');
+        let customStations = JSON.parse(localStorage.getItem('ml_radio_custom_v2') || '[]');
+        let brokenStationIds = new Set(); // Session-tracked offline stations
+
+        // Playback & Health Monitoring State
+        let hlsInstance = null;
+        let connectionTimeoutId = null;
+        let consecutiveSkipCount = 0;
+        const CONNECTION_TIMEOUT_MS = 8000; // 8 seconds max wait before auto-skip
+
+        // Sleep Timer State
+        let sleepTimerInterval = null;
+        let totalSleepSeconds = 0;
+        let remainingSleepSeconds = 0;
+
+        // DOM Elements
+        const audio = document.getElementById('radioAudioPlayer');
+        const stationsGrid = document.getElementById('stationsGrid');
+        const emptyState = document.getElementById('emptyState');
+        const playerStationName = document.getElementById('playerStationName');
+        const playerStatusText = document.getElementById('playerStatusText');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const visualizer = document.getElementById('visualizer');
+        const autoSkipToggle = document.getElementById('autoSkipToggle');
+        const directoryStatus = document.getElementById('directoryStatus');
+
+        /**
+         * Show Non-blocking Toast Banner
+         */
+        let toastTimer = null;
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = msg;
+            toastIcon.setAttribute('data-lucide', type === 'warn' ? 'alert-triangle' : 'info');
+            lucide.createIcons();
+
+            toast.classList.remove('-translate-y-6', 'opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('-translate-y-6', 'opacity-0');
+            }, 3800);
+        }
+
+        /**
+         * Fetch Live Verified Malayalam Streams from Radio Browser API Mirrors
+         * Also updates AIR station stream URLs if newer working URLs are found in the directory
+         */
+        async function loadMalayalamDirectory() {
+            directoryStatus.textContent = 'നിലയങ്ങൾ തിരയുന്നു...';
+            
+            // Start immediately with custom + curated stations so user never waits
+            mergeStations([]);
+
+            const apiMirrors = [
+                'https://de1.api.radio-browser.info/json/stations/search?language=malayalam&order=clickcount&reverse=true&limit=100',
+                'https://at1.api.radio-browser.info/json/stations/search?language=malayalam&hidebroken=true&order=clickcount&reverse=true&limit=100',
+                'https://nl1.api.radio-browser.info/json/stations/search?language=malayalam&hidebroken=true&order=clickcount&reverse=true&limit=100'
+            ];
+
+            for (const url of apiMirrors) {
+                try {
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 6000);
+                    const res = await fetch(url, { signal: controller.signal });
+                    clearTimeout(id);
+
+                    if (!res.ok) continue;
+                    const data = await res.json();
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        const validHttpsItems = data.filter(item => item.url_resolved && item.url_resolved.startsWith('https://'));
+
+                        // Dynamically refresh any AIR station URLs if a verified working match exists in Radio Browser
+                        curatedMalayalamStations.forEach(curated => {
+                            if (curated.category === 'air' && curated.keywords) {
+                                const match = validHttpsItems.find(item => {
+                                    const n = item.name.toLowerCase();
+                                    const isAir = n.includes('air') || n.includes('akashvani') || n.includes('all india radio');
+                                    return isAir && curated.keywords.some(kw => n.includes(kw)) && item.lastcheckok === 1;
+                                });
+                                if (match && match.url_resolved) {
+                                    curated.streamUrl = match.url_resolved;
+                                }
+                            }
+                        });
+
+                        const apiStations = validHttpsItems.map(item => {
+                            const name = item.name.trim();
+                            const tags = (item.tags || '').toLowerCase();
+                            const lowerName = name.toLowerCase();
+
+                            let cat = 'fm';
+                            if (lowerName.includes('air') || lowerName.includes('akashvani') || lowerName.includes('ആകാശവാണി')) {
+                                cat = 'air';
+                            } else if (tags.includes('news') || tags.includes('talk') || lowerName.includes('news')) {
+                                cat = 'news';
+                            } else if (
+                                tags.includes('devotional') || tags.includes('christian') || tags.includes('islamic') ||
+                                tags.includes('hindu') || tags.includes('quran') || lowerName.includes('bhakti') ||
+                                lowerName.includes('jesus') || lowerName.includes('peace') || lowerName.includes('shalom')
+                            ) {
+                                cat = 'devotional';
+                            }
+
+                            return {
+                                id: 'rb-' + item.stationuuid,
+                                name: name,
+                                englishName: name,
+                                category: cat,
+                                tagline: item.tags ? item.tags.split(',').slice(0, 3).join(' • ') : 'Malayalam Live Radio',
+                                streamUrl: item.url_resolved,
+                                color: cat === 'air' ? 'from-emerald-700 to-teal-950' : (cat === 'devotional' ? 'from-amber-600 to-orange-950' : 'from-indigo-700 to-gray-900')
+                            };
+                        });
+
+                        mergeStations(apiStations);
+                        directoryStatus.textContent = `${allStations.length} നിലയങ്ങൾ ലഭ്യമാണ്`;
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('Mirror failed, trying next:', url);
+                }
+            }
+
+            directoryStatus.textContent = `${allStations.length} നിലയങ്ങൾ ലഭ്യമാണ്`;
+        }
+
+        function mergeStations(apiStations) {
+            const seenUrls = new Set();
+            const merged = [];
+
+            const addUnique = (list) => {
+                for (const st of list) {
+                    const normalizedUrl = st.streamUrl.trim().toLowerCase();
+                    if (!seenUrls.has(normalizedUrl)) {
+                        seenUrls.add(normalizedUrl);
+                        merged.push(st);
+                    }
+                }
+            };
+
+            addUnique(customStations);
+            addUnique(curatedMalayalamStations);
+            addUnique(apiStations);
+
+            allStations = merged;
+            updateCategoryCounts();
+            renderStations();
+        }
+
+        function updateCategoryCounts() {
+            document.getElementById('countAll').textContent = allStations.length;
+            document.getElementById('countFav').textContent = favorites.length;
+        }
+
+        /**
+         * Clean up active audio & HLS instances before loading a new stream
+         */
+        function cleanupAudioEngine() {
+            clearTimeout(connectionTimeoutId);
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+            audio.pause();
+            audio.removeAttribute('src');
+            audio.load();
+        }
+
+        /**
+         * Play Station with HLS.js support & 8-second Auto-Skip Health Monitor
+         */
+        function playStation(station, isAutoSkipped = false) {
+            if (!isAutoSkipped) {
+                consecutiveSkipCount = 0;
+            }
+
+            if (currentStation && currentStation.id === station.id && !isAutoSkipped) {
+                togglePlayPause();
+                return;
+            }
+
+            cleanupAudioEngine();
+            currentStation = station;
+            isPlaying = false;
+
+            playerStationName.textContent = station.name;
+            playerStatusText.textContent = 'കണക്ട് ചെയ്യുന്നു... (Connecting...)';
+            playerStatusText.className = 'text-xs sm:text-sm text-amber-300 truncate mt-0.5';
+            setPlayerState('loading');
+            renderStations();
+
+            const url = station.streamUrl;
+            audio.volume = parseFloat(document.getElementById('volumeSlider').value);
+
+            // Start 8-second connection watchdog
+            connectionTimeoutId = setTimeout(() => {
+                handleStreamFailure(station, 'സമയപരിധി കഴിഞ്ഞു (Timeout)');
+            }, CONNECTION_TIMEOUT_MS);
+
+            // Check if HLS (.m3u8) stream
+            if (url.includes('.m3u8') && typeof Hls !== 'undefined' && Hls.isSupported()) {
+                hlsInstance = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    manifestLoadingTimeOut: 7000,
+                    levelLoadingTimeOut: 7000
+                });
+                hlsInstance.loadSource(url);
+                hlsInstance.attachMedia(audio);
+
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    audio.play().catch(err => handleStreamFailure(station, err.message));
+                });
+
+                hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        handleStreamFailure(station, 'HLS സ്ട്രീം ലഭ്യമല്ല');
+                    }
+                });
+            } else {
+                // Standard MP3 / AAC / Native HLS (Safari)
+                audio.src = url;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        // Ignore AbortError caused by rapid user clicks
+                        if (err.name !== 'AbortError') {
+                            handleStreamFailure(station, 'സ്ട്രീം പ്ലേ ചെയ്യാനായില്ല');
+                        }
+                    });
+                }
+            }
+        }
+
+        /**
+         * Handle Broken/Unresponsive Station & Trigger Auto-Skip
+         */
+        function handleStreamFailure(failedStation, reason) {
+            if (!currentStation || currentStation.id !== failedStation.id) return;
+            clearTimeout(connectionTimeoutId);
+
+            brokenStationIds.add(failedStation.id);
+            isPlaying = false;
+            setPlayerState('paused');
+            renderStations();
+
+            if (!autoSkipToggle.checked) {
+                playerStatusText.textContent = 'ഈ നിലയം ഇപ്പോൾ ലഭ്യമല്ല (Offline)';
+                playerStatusText.className = 'text-xs sm:text-sm text-rose-400 truncate mt-0.5';
+                showToast(`"${failedStation.name}" ഇപ്പോൾ ലഭ്യമല്ല.`, 'warn');
+                return;
+            }
+
+            consecutiveSkipCount++;
+            if (consecutiveSkipCount >= Math.min(allStations.length, 10)) {
+                playerStatusText.textContent = 'നിലയങ്ങൾ ലഭ്യമല്ല. ഇന്റർനെറ്റ് പരിശോധിക്കുക.';
+                playerStatusText.className = 'text-xs sm:text-sm text-rose-400 truncate mt-0.5';
+                showToast('തുടർച്ചയായ നിലയങ്ങൾ ലഭ്യമല്ല. ദയവായി മറ്റൊന്ന് തിരഞ്ഞെടുക്കുക.', 'warn');
+                consecutiveSkipCount = 0;
+                return;
+            }
+
+            playerStatusText.textContent = 'ലഭ്യമല്ല, അടുത്ത നിലയത്തിലേക്ക് മാറുന്നു...';
+            playerStatusText.className = 'text-xs sm:text-sm text-amber-400 truncate mt-0.5';
+            showToast(`"${failedStation.name}" ലഭ്യമല്ല, അടുത്തതിലേക്ക് മാറുന്നു...`, 'warn');
+
+            // Find next station that hasn't failed yet
+            const currentIdx = allStations.findIndex(s => s.id === failedStation.id);
+            for (let i = 1; i <= allStations.length; i++) {
+                const candidate = allStations[(currentIdx + i) % allStations.length];
+                if (!brokenStationIds.has(candidate.id)) {
+                    setTimeout(() => playStation(candidate, true), 450);
+                    return;
+                }
+            }
+        }
+
+        // Audio Element Health Listeners
+        audio.addEventListener('playing', () => {
+            clearTimeout(connectionTimeoutId);
+            consecutiveSkipCount = 0;
+            if (currentStation) {
+                brokenStationIds.delete(currentStation.id);
+            }
+            isPlaying = true;
+            setPlayerState('playing');
+            playerStatusText.textContent = '● തത്സമയം കേൾക്കുന്നു (Live Streaming)';
+            playerStatusText.className = 'text-xs sm:text-sm text-emerald-300 font-semibold truncate mt-0.5';
+            renderStations();
+        });
+
+        audio.addEventListener('error', () => {
+            if (currentStation) {
+                handleStreamFailure(currentStation, 'Audio Stream Error');
+            }
+        });
+
+        function togglePlayPause() {
+            if (!currentStation) {
+                if (allStations.length > 0) playStation(allStations[0]);
+                return;
+            }
+            if (isPlaying) {
+                clearTimeout(connectionTimeoutId);
+                audio.pause();
+                isPlaying = false;
+                setPlayerState('paused');
+                playerStatusText.textContent = 'താൽക്കാലികമായി നിർത്തി (Paused)';
+                playerStatusText.className = 'text-xs sm:text-sm text-gray-300 truncate mt-0.5';
+                renderStations();
+            } else {
+                const st = currentStation;
+                currentStation = null; // Force fresh connect
+                playStation(st);
+            }
+        }
+
+        function setPlayerState(state) {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.add('hidden');
+            loadingSpinner.classList.add('hidden');
+            visualizer.classList.add('paused');
+
+            if (state === 'playing') {
+                pauseIcon.classList.remove('hidden');
+                visualizer.classList.remove('paused');
+            } else if (state === 'loading') {
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                playIcon.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Render Station Cards
+         */
+        function renderStations() {
+            const filtered = allStations.filter(st => {
+                if (activeCategory === 'favorites' && !favorites.includes(st.id)) return false;
+                if (activeCategory !== 'all' && activeCategory !== 'favorites' && st.category !== activeCategory) return false;
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.toLowerCase();
+                    return st.name.toLowerCase().includes(q) || (st.tagline && st.tagline.toLowerCase().includes(q));
+                }
+                return true;
+            });
+
+            stationsGrid.innerHTML = '';
+            if (filtered.length === 0) {
+                stationsGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            stationsGrid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(station => {
+                const isCurrent = currentStation && currentStation.id === station.id;
+                const isFav = favorites.includes(station.id);
+                const isOffline = brokenStationIds.has(station.id);
+
+                const card = document.createElement('div');
+                card.className = `group rounded-2xl p-3.5 transition-all cursor-pointer border flex items-center gap-3 ${
+                    isCurrent
+                        ? 'bg-gray-900 border-amber-400 gold-glow'
+                        : isOffline
+                            ? 'bg-gray-900/30 border-rose-900/40 opacity-65 hover:opacity-100'
+                            : 'bg-gray-900/75 hover:bg-gray-900 border-gray-800 hover:border-amber-500/40'
+                }`;
+
+                card.onclick = () => playStation(station);
+
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${station.color || 'from-emerald-700 to-gray-900'} border border-white/10 flex items-center justify-center shrink-0 relative">
+                        <i data-lucide="radio" class="w-5 h-5 text-white"></i>
+                        ${isCurrent && isPlaying ? `<span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>` : ''}
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-sm font-bold ${isCurrent ? 'text-amber-400' : 'text-white'} truncate">
+                            ${station.name}
+                        </h3>
+                        <p class="text-[11px] text-gray-400 truncate mt-0.5">${station.tagline || 'Malayalam Live'}</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            ${isOffline
+                                ? `<span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold">ലഭ്യമല്ല (Offline)</span>`
+                                : `<span class="text-[10px] px-2 py-0.5 rounded bg-gray-800 text-gray-300 font-medium">${station.category.toUpperCase()}</span>`
+                            }
+                            ${isCurrent && isPlaying ? `<span class="text-[10px] text-emerald-400 font-bold">● LIVE</span>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="toggleFavorite('${station.id}', event)" class="p-2 rounded-xl hover:bg-gray-800 ${isFav ? 'text-rose-500' : 'text-gray-500 hover:text-rose-400'}" title="പ്രിയപ്പെട്ടവ">
+                            <i data-lucide="heart" class="w-4 h-4 ${isFav ? 'fill-current' : ''}"></i>
+                        </button>
+                        <div class="w-8 h-8 rounded-full ${isCurrent ? 'bg-amber-500 text-gray-950' : 'bg-gray-800 text-gray-300'} flex items-center justify-center">
+                            <i data-lucide="${isCurrent && isPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5 fill-current"></i>
+                        </div>
+                    </div>
+                `;
+                stationsGrid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function toggleFavorite(id, e) {
+            e.stopPropagation();
+            const idx = favorites.indexOf(id);
+            if (idx === -1) {
+                favorites.push(id);
+                showToast('പ്രിയപ്പെട്ടവയിലേക്ക് ചേർത്തു ❤️');
+            } else {
+                favorites.splice(idx, 1);
+                showToast('പ്രിയപ്പെട്ടവയിൽ നിന്ന് നീക്കി');
+            }
+            localStorage.setItem('ml_radio_favs_v2', JSON.stringify(favorites));
+            updateCategoryCounts();
+            renderStations();
+        }
+
+        /**
+         * Prominent Sleep Timer Logic with 10-Second Smooth Volume Fade-Out
+         */
+        function setSleepTimer(minutes) {
+            clearInterval(sleepTimerInterval);
+            updateSleepPillUI(minutes);
+
+            if (!minutes || minutes <= 0) {
+                totalSleepSeconds = 0;
+                remainingSleepSeconds = 0;
+                document.getElementById('activeTimerBar').classList.add('hidden');
+                document.getElementById('sleepStatusLabel').textContent = 'ഓഫ് (Off)';
+                document.getElementById('sleepStatusLabel').className = 'text-xs text-gray-400';
+                return;
+            }
+
+            totalSleepSeconds = minutes * 60;
+            remainingSleepSeconds = totalSleepSeconds;
+
+            document.getElementById('activeTimerBar').classList.remove('hidden');
+            document.getElementById('sleepStatusLabel').textContent = `${minutes} മിനിറ്റ് സജ്ജമാക്കി`;
+            document.getElementById('sleepStatusLabel').className = 'text-xs text-emerald-400 font-semibold';
+            updateCountdownUI();
+
+            showToast(`${minutes} മിനിറ്റിന് ശേഷം റേഡിയോ തനിയെ ഓഫാകും 🌙`);
+
+            const initialVol = parseFloat(document.getElementById('volumeSlider').value);
+
+            sleepTimerInterval = setInterval(() => {
+                remainingSleepSeconds--;
+                updateCountdownUI();
+
+                // Gradual 10-second volume fade out before stopping
+                if (remainingSleepSeconds <= 10 && remainingSleepSeconds > 0 && isPlaying) {
+                    audio.volume = Math.max(0.05, initialVol * (remainingSleepSeconds / 10));
+                }
+
+                if (remainingSleepSeconds <= 0) {
+                    setSleepTimer(0);
+                    audio.pause();
+                    audio.volume = initialVol;
+                    isPlaying = false;
+                    setPlayerState('paused');
+                    playerStatusText.textContent = 'സ്ലീപ് ടൈമർ പ്രകാരം റേഡിയോ ഓഫായി 🌙';
+                    playerStatusText.className = 'text-xs sm:text-sm text-amber-400 truncate mt-0.5';
+                    renderStations();
+                    showToast('സ്ലീപ് ടൈമർ പൂർത്തിയായി. ശുഭരാത്രി! 🌙');
+                }
+            }, 1000);
+        }
+
+        function updateCountdownUI() {
+            const mins = Math.floor(remainingSleepSeconds / 60);
+            const secs = remainingSleepSeconds % 60;
+            document.getElementById('liveCountdownClock').textContent =
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            const pct = totalSleepSeconds > 0 ? (remainingSleepSeconds / totalSleepSeconds) * 100 : 0;
+            document.getElementById('timerProgressBar').style.width = `${pct}%`;
+        }
+
+        function updateSleepPillUI(activeMinutes) {
+            document.querySelectorAll('.sleep-pill').forEach(btn => {
+                const m = parseInt(btn.dataset.minutes, 10);
+                if (m === activeMinutes) {
+                    btn.className = 'sleep-pill active px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-gray-950 transition';
+                } else {
+                    btn.className = 'sleep-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800/90 hover:bg-amber-500/20 text-gray-200 border border-gray-700 transition';
+                }
+            });
+        }
+
+        // Event Bindings
+        playPauseBtn.addEventListener('click', togglePlayPause);
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (!allStations.length) return;
+            const idx = currentStation ? allStations.findIndex(s => s.id === currentStation.id) : -1;
+            playStation(allStations[(idx + 1) % allStations.length]);
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (!allStations.length) return;
+            const idx = currentStation ? allStations.findIndex(s => s.id === currentStation.id) : 0;
+            playStation(allStations[(idx - 1 + allStations.length) % allStations.length]);
+        });
+
+        // Sleep Timer Controls
+        document.querySelectorAll('.sleep-pill').forEach(btn => {
+            btn.addEventListener('click', () => setSleepTimer(parseInt(btn.dataset.minutes, 10)));
+        });
+
+        document.getElementById('setCustomTimerBtn').addEventListener('click', () => {
+            const val = parseInt(document.getElementById('customMinutesInput').value, 10);
+            if (val && val > 0 && val <= 480) {
+                setSleepTimer(val);
+                document.getElementById('customMinutesInput').value = '';
+            } else {
+                showToast('1 മുതൽ 480 വരെയുള്ള മിനിറ്റ് നൽകുക', 'warn');
+            }
+        });
+
+        document.getElementById('cancelTimerBtn').addEventListener('click', () => {
+            setSleepTimer(0);
+            showToast('സ്ലീപ് ടൈമർ റദ്ദാക്കി');
+        });
+
+        // Volume Controls
+        const volumeSlider = document.getElementById('volumeSlider');
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = parseFloat(e.target.value);
+            audio.muted = false;
+            document.getElementById('volumeIcon').setAttribute('data-lucide', audio.volume === 0 ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
+        });
+
+        document.getElementById('muteBtn').addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            document.getElementById('volumeIcon').setAttribute('data-lucide', audio.muted ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
+        });
+
+        // Search & Categories
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            clearSearchBtn.classList.toggle('hidden', !searchQuery);
+            renderStations();
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchQuery = '';
+            searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            renderStations();
+        });
+
+        document.querySelectorAll('.category-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.category-pill').forEach(p => {
+                    p.className = 'category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-gray-300 border border-gray-800 transition';
+                });
+                pill.className = 'category-pill shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-gray-950 transition';
+                activeCategory = pill.dataset.category;
+                renderStations();
+            });
+        });
+
+        document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+            searchQuery = '';
+            searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            document.querySelector('.category-pill[data-category="all"]').click();
+        });
+
+        document.getElementById('refreshDirectoryBtn').addEventListener('click', () => {
+            brokenStationIds.clear();
+            loadMalayalamDirectory();
+            showToast('നിലയങ്ങളുടെ ലിസ്റ്റ് പുതുക്കുന്നു...');
+        });
+
+        // Custom Station Modal Logic
+        const customModal = document.getElementById('customStationModal');
+        document.getElementById('openCustomModalBtn').addEventListener('click', () => {
+            customModal.classList.remove('hidden');
+            customModal.classList.add('flex');
+        });
+        document.getElementById('closeCustomModalBtn').addEventListener('click', () => {
+            customModal.classList.add('hidden');
+            customModal.classList.remove('flex');
+        });
+        document.getElementById('saveCustomStationBtn').addEventListener('click', () => {
+            const name = document.getElementById('customStationName').value.trim();
+            const url = document.getElementById('customStationUrl').value.trim();
+            const cat = document.getElementById('customStationCategory').value;
+
+            if (!name || !url.startsWith('http')) {
+                showToast('ശരിയായ പേരും HTTPS ലിങ്കും നൽകുക', 'warn');
+                return;
+            }
+
+            const newSt = {
+                id: 'custom-' + Date.now(),
+                name,
+                englishName: name,
+                category: cat,
+                tagline: 'Custom Added Station',
+                streamUrl: url,
+                color: 'from-amber-600 to-gray-900'
+            };
+
+            customStations.unshift(newSt);
+            localStorage.setItem('ml_radio_custom_v2', JSON.stringify(customStations));
+            allStations.unshift(newSt);
+            updateCategoryCounts();
+            renderStations();
+
+            customModal.classList.add('hidden');
+            customModal.classList.remove('flex');
+            document.getElementById('customStationName').value = '';
+            document.getElementById('customStationUrl').value = '';
+            playStation(newSt);
+        });
+    
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadMalayalamDirectory();
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
